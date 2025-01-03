@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actions I/O - {{ .Name }} </title>
+    <style>{{ .CSS }}</style>
+    <script>
+        function copyBadgeURL() {
+            const copyText = document.getElementById("badgeURL");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // For mobile devices
+            navigator.clipboard.writeText(copyText.value);
+        }
+    </script>
+</head>
+<body>
+<h1>{{ .Name }}</h1>
+
+<h2>Action Inputs</h2>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Required</th>
+        <th>Default</th>
+    </tr>
+    {{ range .Inputs }}
+    <tr>
+        <td>{{ .Key }}</td>
+        <td>{{ .Value.DeprecationMessage }}{{ .Value.Description }}</td>
+        <td>{{ .Value.Required }}</td>
+        <td>{{ .Value.Default }}</td>
+    </tr>
+    {{ end }}
+</table>
+
+<h2>Action Outputs</h2>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    {{ range .Outputs }}
+    <tr>
+        <td>{{ .Key }}</td>
+        <td>{{ .Value.Description }}</td>
+    </tr>
+    {{ end }}
+</table>
+<p><a href="{{ .ActionFileURL }}">{{ .ActionFileURL }}</a></p>
+
+<h3>Maintainer? Add a badge to your README</h3>
+<div style="display: flex; width: 100%;">
+    <input
+            id="badgeURL"
+            onclick="this.select();"
+            type="text"
+            value="![Actions I/O]({{ .BadgeURL }})"
+            readonly
+            style="
+      flex-grow: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid;
+      border-right: none;
+      border-radius: 4px 0 0 4px;
+      background-color: #00000000;
+    "
+    >
+    <button
+            onclick="copyBadgeURL()"
+            style="
+      padding: 10px 15px;
+      font-size: 16px;
+      border: 1px solid;
+      border-left: none;
+      border-radius: 0 4px 4px 0;
+      background-color: #00000000;
+      cursor: pointer;
+    "
+            onmouseover="this.style.backgroundColor='#eee'"
+            onmouseout="this.style.backgroundColor='#00000000'"
+    >📋
+    </button>
+</div>
+</body>
+</html>

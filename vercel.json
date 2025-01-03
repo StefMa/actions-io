@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/badge/:owner/:repo",
+      "destination": "/api/badge"
+    },
+    {
+      "source": "/:owner/:repo",
+      "destination": "/api/actions-io"
+    }
+  ]
+}
