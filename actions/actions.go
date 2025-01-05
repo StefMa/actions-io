@@ -36,7 +36,7 @@ type ActionOutput struct {
 func Config(query url.Values) (*GitHubConfig, error) {
 	owner, repo, branch := extractOwnerRepoBranch(query)
 
-	filename, body, err := fetchActionFileContent(owner, repo, branch)
+	filename, branch, body, err := fetchActionFileContent(owner, repo, branch)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching action file content. see %w", err)
 	}
@@ -59,7 +59,7 @@ func extractOwnerRepoBranch(query url.Values) (owner, repo, branch string) {
 	repo = query.Get("repo")
 	repoParts := strings.Split(repo, "@")
 
-	branch = "main"
+	branch = ""
 	if len(repoParts) == 2 {
 		repo = repoParts[0]
 		branch = repoParts[1]
@@ -67,24 +67,48 @@ func extractOwnerRepoBranch(query url.Values) (owner, repo, branch string) {
 	return owner, repo, branch
 }
 
-func fetchActionFileContent(owner, repo, branch string) (filename string, body []byte, err error) {
-	filename = "action.yml"
-	actionsFileUrl := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s/%s", owner, repo, branch, filename)
+func fetchActionFileContent(owner, repo, branch string) (filename string, finalBranch string, body []byte, err error) {
+	if branch != "" {
+		filename, body, err = fetchActionFiles(owner, repo, branch)
+		if err == nil {
+			return filename, branch, body, nil
+		}
+		return "", "", nil, fmt.Errorf("couldn't fetch action files from branch %s. See also %v", branch, err)
+	}
 
+	branches := []string{"main", "master"}
+	for _, br := range branches {
+		filename, body, err = fetchActionFiles(owner, repo, br)
+		if err == nil {
+			return filename, br, body, nil
+		}
+	}
+
+	return "", "", nil, fmt.Errorf("couldn't fetch action files from main or master branch. See also %v", err)
+}
+
+func fetchActionFiles(owner, repo, branch string) (filename string, body []byte, err error) {
+	filenames := []string{"action.yml", "action.yaml"}
+	for _, fn := range filenames {
+		body, err = fetchFileContent(owner, repo, branch, fn)
+		if err == nil {
+			return fn, body, nil
+		}
+	}
+	return "", nil, fmt.Errorf("error fetching both actions files (action.yml and action.yaml). See also %v", err)
+}
+
+func fetchFileContent(owner, repo, branch, filename string) ([]byte, error) {
+	actionsFileUrl := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s/%s", owner, repo, branch, filename)
 	resp, err := http.Get(actionsFileUrl)
 	if err != nil || resp.StatusCode != http.StatusOK {
-		filename = "action.yaml"
-		actionsFileUrl = fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s/%s", owner, repo, branch, filename)
-		resp, err = http.Get(actionsFileUrl)
-		if err != nil || resp.StatusCode != http.StatusOK {
-			return "", nil, fmt.Errorf("error fetching action file. see %w", err)
-		}
+		return nil, fmt.Errorf("error fetching file from %s", actionsFileUrl)
 	}
 	defer resp.Body.Close()
 
-	body, err = io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", nil, fmt.Errorf("error reading action file. see %w", err)
+		return nil, fmt.Errorf("error reading file content from %s", actionsFileUrl)
 	}
-	return filename, body, nil
+	return body, nil
 }
