@@ -28,6 +28,7 @@ type htmlTemplateData struct {
 	}
 	ActionFileURL template.URL
 	BadgeURL      template.URL
+	SiteURL       template.URL
 	CSS           template.CSS
 }
 
@@ -44,6 +45,7 @@ func DefaultHandler(w http.ResponseWriter, r *http.Request) {
 		Outputs:       sortMapKeys(config.ActionConfig.Outputs),
 		ActionFileURL: template.URL(fmt.Sprintf("https://github.com/%s/blob/%s/%s", config.Repository, config.Branch, config.ActionFilename)),
 		BadgeURL:      template.URL(fmt.Sprintf("https://%s/badge/%s@%s", r.Host, config.Repository, config.Branch)),
+		SiteURL:       template.URL(fmt.Sprintf("https://%s/%s@%s", r.Host, config.Repository, config.Branch)),
 		CSS:           template.CSS(css),
 	}
 
