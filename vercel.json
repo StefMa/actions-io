@@ -9,6 +9,10 @@
     {
       "source": "/:owner/:repo",
       "destination": "/api/actions-io"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/404.html"
     }
   ]
 }
