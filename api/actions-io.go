@@ -8,13 +8,8 @@ import (
 	"sort"
 
 	"github.com/stefma/action-inputs/actions"
+	"github.com/stefma/action-inputs/embeds"
 )
-
-//go:embed templates/index.html
-var htmlTemplate string
-
-//go:embed templates/style.css
-var css string
 
 type htmlTemplateData struct {
 	Name   string
@@ -46,10 +41,10 @@ func DefaultHandler(w http.ResponseWriter, r *http.Request) {
 		ActionFileURL: template.URL(fmt.Sprintf("https://github.com/%s/blob/%s/%s", config.Repository, config.Branch, config.ActionFilename)),
 		BadgeURL:      template.URL(fmt.Sprintf("https://%s/badge/%s@%s", r.Host, config.Repository, config.Branch)),
 		SiteURL:       template.URL(fmt.Sprintf("https://%s/%s@%s", r.Host, config.Repository, config.Branch)),
-		CSS:           template.CSS(css),
+		CSS:           template.CSS(embeds.StyleCss),
 	}
 
-	tmpl, err := template.New("webpage").Parse(htmlTemplate)
+	tmpl, err := template.New("webpage").Parse(embeds.IndexHtml)
 	if err != nil {
 		http.Error(w, "Error parsing template", http.StatusInternalServerError)
 		return
